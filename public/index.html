@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Focus</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2rem;
+    }
+
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .mode-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      background: #f0f0f0;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .mode-btn.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .mode-btn:hover:not(.active) {
+      background: #e0e0e0;
+    }
+
+    .timer-display {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .timer {
+      font-size: 6rem;
+      font-weight: 300;
+      color: #333;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -2px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .control-btn {
+      padding: 15px 40px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .start-btn {
+      background: #667eea;
+      color: white;
+    }
+
+    .start-btn:hover {
+      background: #5a6fd6;
+      transform: translateY(-2px);
+    }
+
+    .pause-btn {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .pause-btn:hover {
+      background: #e08e0b;
+      transform: translateY(-2px);
+    }
+
+    .reset-btn {
+      background: #ef4444;
+      color: white;
+    }
+
+    .reset-btn:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    .settings {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .settings h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .setting-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-row label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .setting-row input {
+      width: 80px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .stats {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .stats h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+    }
+
+    .stat-item .label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .stat-item .value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .stat-item .sub-value {
+      font-size: 12px;
+      color: #999;
+      margin-top: 3px;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      .timer {
+        font-size: 4rem;
+      }
+
+      .mode-btn {
+        padding: 8px 15px;
+        font-size: 12px;
+      }
+
+      .control-btn {
+        padding: 12px 25px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍅 Pomodoro Focus</h1>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="focus">Focus</button>
+      <button class="mode-btn" data-mode="short-break">Short Break</button>
+      <button class="mode-btn" data-mode="long-break">Long Break</button>
+    </div>
+
+    <div class="timer-display">
+      <div class="timer" id="timer">25:00</div>
+    </div>
+
+    <div class="controls">
+      <button class="control-btn start-btn" id="startBtn">Start</button>
+      <button class="control-btn pause-btn" id="pauseBtn" style="display: none;">Pause</button>
+      <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="settings">
+      <h3>⚙️ Custom Durations (minutes)</h3>
+      <div class="setting-row">
+        <label>Focus Duration</label>
+        <input type="number" id="focusDuration" value="25" min="1" max="60">
+      </div>
+      <div class="setting-row">
+        <label>Short Break</label>
+        <input type="number" id="shortBreakDuration" value="5" min="1" max="30">
+      </div>
+      <div class="setting-row">
+        <label>Long Break</label>
+        <input type="number" id="longBreakDuration" value="15" min="1" max="60">
+      </div>
+    </div>
+
+    <div class="stats">
+      <h3>📊 Today's Focus Statistics</h3>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="label">Focus Sessions</div>
+          <div class="value" id="focusCount">0</div>
+          <div class="sub-value"><span id="focusTotal">0</span> min</div>
+        </div>
+        <div class="stat-item">
+          <div class="label">Short Breaks</div>
+          <div class="value" id="shortBreakCount">0</div>
+          <div class="sub-value"><span id="shortBreakTotal">0</span> min</div>
+        </div>
+        <div class="stat-item">
+          <div class="label">Long Breaks</div>
+          <div class="value" id="longBreakCount">0</div>
+          <div class="sub-value"><span id="longBreakTotal">0</span> min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMode = 'focus';
+    let timeRemaining = 25 * 60;
+    let isRunning = false;
+    let timerId = null;
+
+    const durations = {
+      focus: 25,
+      'short-break': 5,
+      'long-break': 15
+    };
+
+    // DOM Elements
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const focusDurationInput = document.getElementById('focusDuration');
+    const shortBreakDurationInput = document.getElementById('shortBreakDuration');
+    const longBreakDurationInput = document.getElementById('longBreakDuration');
+
+    // Format time as MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Update timer display
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(timeRemaining);
+      document.title = `${formatTime(timeRemaining)} - Pomodoro Focus`;
+    }
+
+    // Start timer
+    function startTimer() {
+      if (!isRunning && timeRemaining > 0) {
+        isRunning = true;
+        startBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
+        
+        timerId = setInterval(() => {
+          timeRemaining--;
+          updateDisplay();
+          
+          if (timeRemaining <= 0) {
+            clearInterval(timerId);
+            isRunning = false;
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            
+            // Record completed session
+            recordSession(currentMode, durations[currentMode]);
+            
+            // Play notification sound
+            playNotification();
+            
+            alert(`${currentMode === 'focus' ? 'Focus' : 'Break'} session completed!`);
+            resetTimer();
+          }
+        }, 1000);
+      }
+    }
+
+    // Pause timer
+    function pauseTimer() {
+      if (isRunning) {
+        clearInterval(timerId);
+        isRunning = false;
+        startBtn.style.display = 'inline-block';
+        startBtn.textContent = 'Resume';
+        pauseBtn.style.display = 'none';
+      }
+    }
+
+    // Reset timer
+    function resetTimer() {
+      clearInterval(timerId);
+      isRunning = false;
+      startBtn.style.display = 'inline-block';
+      startBtn.textContent = 'Start';
+      pauseBtn.style.display = 'none';
+      timeRemaining = durations[currentMode] * 60;
+      updateDisplay();
+    }
+
+    // Switch mode
+    function switchMode(mode) {
+      currentMode = mode;
+      modeBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      
+      // Update duration from inputs
+      durations.focus = parseInt(focusDurationInput.value) || 25;
+      durations['short-break'] = parseInt(shortBreakDurationInput.value) || 5;
+      durations['long-break'] = parseInt(longBreakDurationInput.value) || 15;
+      
+      timeRemaining = durations[mode] * 60;
+      updateDisplay();
+      resetTimer();
+    }
+
+    // Record session to database
+    async function recordSession(mode, duration) {
+      try {
+        await fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode, duration })
+        });
+        loadStats();
+      } catch (error) {
+        console.error('Failed to record session:', error);
+      }
+    }
+
+    // Load statistics
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+        
+        document.getElementById('focusCount').textContent = stats.focus.count;
+        document.getElementById('focusTotal').textContent = Math.round(stats.focus.totalDuration / 60);
+        
+        document.getElementById('shortBreakCount').textContent = stats['short-break'].count;
+        document.getElementById('shortBreakTotal').textContent = Math.round(stats['short-break'].totalDuration / 60);
+        
+        document.getElementById('longBreakCount').textContent = stats['long-break'].count;
+        document.getElementById('longBreakTotal').textContent = Math.round(stats['long-break'].totalDuration / 60);
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    }
+
+    // Play notification sound
+    function playNotification() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Event Listeners
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+
+    [focusDurationInput, shortBreakDurationInput, longBreakDurationInput].forEach(input => {
+      input.addEventListener('change', () => {
+        if (currentMode === input.id.replace('Duration', '')) {
+          resetTimer();
+        }
+      });
+    });
+
+    // Initialize
+    updateDisplay();
+    loadStats();
+  </script>
+</body>
+</html>
